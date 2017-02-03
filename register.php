@@ -15,7 +15,7 @@
 		$username = array_key_exists('username', $_POST) ? mysqli_real_escape_string($link,trim($_POST['username'])) : "";
 		if($_POST['action']=='login') {
 			if(trim($username) == "" or trim($_POST['password']) == "") {
-				header("Location: login.php?derror=1"); // empty entry
+				header("Location: register.php?derror=1"); // empty entry
 			} else {
 				// code to login the user and start a session
 				$query = "SELECT salt,hash FROM users WHERE username='".$username."'";
@@ -24,8 +24,7 @@
 				$currhash = crypt($_POST['password'], $fields['salt']);
 				if($currhash == $fields['hash']) {
 					$_SESSION['username'] = $username;
-					($username == 'admin')?header("Location: admin"):header("Location: ");					
-					
+					header("Location: index.php");
 				} else
 					header("Location: login.php?error=1");
 			}
@@ -33,20 +32,20 @@
 			// register the user
         $email = array_key_exists('email', $_POST) ? mysqli_real_escape_string($link,trim($_POST['email'])) : "";
 		if(trim($username) == "" and trim($_POST['password']) == "" and trim($email) == "") {
-				header("Location: login.php?derror=1"); // empty entry
+				header("Location: register.php?derror=1"); // empty entry
 			} else {
 				// create the entry in the users table
 				$link=connectdb();
 				$query = "SELECT salt,hash FROM users WHERE username='".$username."'";
 				$result = mysqli_query($link,$query);
 				if(mysqli_num_rows($result)!=0) {
-					header("Location: login.php?exists=1");
+					header("Location: register.php?exists=1");
 				} else {
 					$salt = randomAlphaNum(5);
 					$hash = crypt($_POST['password'], $salt);
 					$sql="INSERT INTO `users` ( `username` , `salt` , `hash` , `email`, `status` ) VALUES ('".$username."', '$salt', '$hash', '".$email."', '1')";
 					$result=mysqli_query($link,$sql);
-					header("Location: login.php?registered=1&result=".$result);
+					header("Location: register.php?registered=1&result=".$result);
 				}
 			}
 		}
@@ -119,6 +118,7 @@
 
   <body>
 
+
     <div class="navbar navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
@@ -147,24 +147,25 @@
           echo("<div class=\"alert alert-error\">\nPlease enter all the details asked before you can continue!\n</div>");
       ?>
 
-
 	  
 	  <div id="switched_body">
-	  <h1><small>Login</small></h1>
-      <p>Login to continue.</p><br/>
-      <form method="post" action="login.php">
-        <input type="hidden" name="action" value="login"/>
-        Username: <input type="text" name="username" placeholder=username /><br/>
-        Password: <input type="password" name="password" placeholder=password /><br/><br/>
-        <input class="btn" type="submit" name="submit" value="Login"/></form>
-		</div>
-	  <?php
-	?>
+		<form method="post" action="login.php">
+			<input type="hidden" name="action" value="register"/>
+			<h1><small>New User? Register now</small></h1>
+			<p>Login to continue.</p><br/>
+			Username: <input type="text" name="username" placeholder=username /><br/>
+			Password: <input type="password" name="password" placeholder=password /><br/>
+			Email: <input type="email" name="email" placeholder=email />
+			<br/><br/>
+			<input class="btn btn-primary" type="submit" name="submit" value="Register"/>
+		</form>
+	  </div>
       <hr/>
 	  <ul class="pagination" style="">
-			<li> <a href='#'>LOGIN </a>	</li>
-			<li> <a href="register.php">REGISTER </a></li>
+			<li > <a href="login.php">LOGIN </a>	</li>
+			<li > <a>REGISTER </a></li>
 	  </ul>
+
 
 	  <!-- /container -->
 		

@@ -11,7 +11,7 @@
 		header("Location: login.php");
 	else
 		include('header.php');
-		connectdb();
+		$link=connectdb();
 ?>
               <li><a href="index.php">Problems</a></li>
               <li><a href="submissions.php">Submissions</a></li>
@@ -48,8 +48,8 @@
           <h1><small>Change Email</small></h1>
           <?php
           	$query = "SELECT email FROM users WHERE username='".$_SESSION['username']."'";
-          	$result = mysql_query($query);
-          	$fields = mysql_fetch_array($result);
+          	$result = mysqli_query($link,$query);
+          	$fields = mysqli_fetch_array($result,MYSQLI_BOTH);
           ?>
           Email: <input type="email" name="email" value="<?php echo $fields['email'];?>"/><br/><br/>
           <input class="btn" type="submit" name="submit" value="Change Email"/>

@@ -11,7 +11,7 @@
 		header("Location: login.php");
 	else
 		include('header.php');
-		connectdb();
+		$link=connectdb();
 ?>
               <li><a href="index.php">Problems</a></li>
               <li><a href="submissions.php">Submissions</a></li>
@@ -29,29 +29,72 @@
     <table class="table table-striped">
       <thead><tr>
         <th>Name</th>
-        <th>Solved</th>
+        <th>Points</th>
+		<th>Solved</th>
         <th>Attempted</th>
+		
       </tr></thead>
-      <tbody>
-      <?php
-        $query = "SELECT username, status FROM users WHERE username!='admin'";
-        $result = mysql_query($query);
-       	while($row = mysql_fetch_array($result)) {
-       		// displays the user, problems solved and attempted
-       		$sql = "SELECT * FROM solve WHERE (status='2' AND username='".$row['username']."')";
-       		$res = mysql_query($sql);
-       		echo("<tr><td>".$row['username']." ");
-       		if($row['status'] == 0) echo("</a> <span class=\"label label-important\">Banned</span>");
-       		echo("</td><td><span class=\"badge badge-success\">".mysql_num_rows($res));
-       		$sql = "SELECT * FROM solve WHERE (status='1' AND username='".$row['username']."')";
-       		$res = mysql_query($sql);
-       		echo("</span></td><td><span class=\"badge badge-warning\">".mysql_num_rows($res)."</span></td></tr>");
+      <tbody><div id="live">
+	        <?php
+			
+			$_q = "SELECT 	users.sl, 
+							users.username,  
+							(SELECT COUNT(solve.status) 
+									FROM solve 
+									WHERE solve.username = users.username 
+                             				AND solve.status=2 ) AS solved, 
+							(SELECT COUNT(solve.status) 
+									FROM solve 
+									WHERE solve.username = users.username ) AS attempts, 
+									(SELECT SUM(points) 
+											FROM solve 
+											WHERE status=2 AND username=users.username) AS points 
+						FROM users 
+						WHERE users.status=1 and users.username!='admin'
+						ORDER BY points DESC, attempts ASC 
+						LIMIT 0, 35 ";
+			
+			$_result = mysqli_query($link,$_q);
+			while($row = mysqli_fetch_array($_result,MYSQLI_BOTH)){
+					echo("<tr><td>".$row['username']."</td>");
+					
+					// POINT BADGE
+					echo "<td><span class=\"badge badge-info\">[ $row[points] POINTS ]</span></td>";
+					
+					// SOLVED BADGE
+					echo "<td><span class=\"badge badge-success\">".$row['solved']."</span></td>";
+		
+					// ATTEMPTED BADGE
+					echo("<td><span class=\"badge badge-warning\">".$row['attempts']."</span></td>");
+						
+						
+				$class="<span class= 'badge badge-success' >";
+				echo "<td>.$class $total </span></td></tr>";
        	}
+	
       ?>
+	  
+	  </div>
       </tbody>
       </table>
     </div> <!-- /container -->
-
+<script>
+window.setTimeout(function(){
+function loadDoc() {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+     document.getElementById("live").innerHTML = this.responseText;
+    }
+  };
+  xhttp.open("GET", "live.php", true);
+  xhttp.send();
+}
+loadDoc
+}, 8000);
+</script>
 <?php
 	include('footer.php');
 ?>
+
+		

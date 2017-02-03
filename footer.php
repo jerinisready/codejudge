@@ -8,7 +8,8 @@
  */
 ?>
     <hr/>
-    <div class="footer">Powered by <a href="about.php">Codejudge</a>.</div>
+	
+    <div class="footer"><img src=compass.png  width=150px height=150px><br>Powered by <a href="http://www.compasscek.in">COMPASS</a>.</div>
     <!-- Le javascript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
@@ -25,7 +26,5 @@
     <script src="js/bootstrap-collapse.js"></script>
     <script src="js/bootstrap-carousel.js"></script>
     <script src="js/bootstrap-typeahead.js"></script>
-
-  
-
+	
 </body></html>

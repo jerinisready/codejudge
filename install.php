@@ -6,6 +6,7 @@
  *
  * Installation PHP Script
  */
+  if(file_exists("dbinfo.php") ){ header("Location :/admin/login.php");}
 	require_once('functions.php');
 	if(isset($_POST['host'])) {
 		// create file 'dbinfo.php'
@@ -18,62 +19,76 @@
 		$l6 = '$compilerport='.$_POST['cport'].';';
 		fwrite($fp, "<?php\n$l1\n$l2\n$l3\n$l4\n$l5\n$l6\n?>");
 		fclose($fp);
+		$_ENV['MODE']=isset($_POST['mode'])?$_POST['mode']:'development';
 		include('dbinfo.php');
 		// connect to the MySQL server
-		mysql_connect($host,$user,$password);
+		$link = mysqli_connect($host,$user,$password,$database);
+		
+		if (!$link) {
+			echo "Error: Unable to connect to MySQL." . PHP_EOL;
+			echo "Debugging errno: " . mysqli_connect_errno() . PHP_EOL;
+			echo "Debugging error: " . mysqli_connect_error() . PHP_EOL;
+			exit;
+		}
+
+		echo "Success: A proper connection to MySQL was made! The my_db database is great." . PHP_EOL;
+		echo "Host information: " . mysqli_get_host_info($link) . PHP_EOL;
 		// create the database
-		mysql_query("CREATE DATABASE $database");
-		mysql_select_db($database) or die('Error connecting to database.');
+		mysqli_query($link,"CREATE IF NOT EXISTS DATABASE $database");
+		mysqli_select_db($link,$database) or die('Error connecting to database.');
 		// create the preferences table
-		mysql_query("CREATE TABLE `prefs` (
-  `name` varchar(30) NOT NULL,
-  `accept` int(11) NOT NULL,
-  `c` int(11) NOT NULL,
-  `cpp` int(11) NOT NULL,
-  `java` int(11) NOT NULL,
-  `python` int(11) NOT NULL
-)");
+		mysqli_query($link,"CREATE TABLE `prefs` (
+					`name` varchar(30) NOT NULL,
+					`accept` int(11) NOT NULL,
+					`c` int(11) NOT NULL,
+					`cpp` int(11) NOT NULL,
+					`java` int(11) NOT NULL,
+					`python` int(11) NOT NULL
+					)");
 		// fill it with default preferences
-		mysql_query("INSERT INTO `prefs` (`name`, `accept`, `c`, `cpp`, `java`, `python`) VALUES
-('Codejudge', 1, 1, 1, 1, 1)");
+		mysqli_query($link,"INSERT INTO `prefs` (`name`, `accept`, `c`, `cpp`, `java`, `python`) VALUES ('Codejudge', 1, 1, 1, 1, 1)");
 		// create the problems table
-		mysql_query("CREATE TABLE IF NOT EXISTS `problems` (
-  `sl` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(200) NOT NULL,
-  `text` text NOT NULL,
-  `input` text NOT NULL,
-  `output` text NOT NULL,
-  `time` int(11) NOT NULL DEFAULT '3000',
-  PRIMARY KEY (`sl`)
-)");
+		mysqli_query($link,"CREATE TABLE IF NOT EXISTS `problems` (
+					`sl` int(11) NOT NULL AUTO_INCREMENT,
+					  `name` varchar(200) NOT NULL,
+					  `text` text NOT NULL,
+					  `input` text NOT NULL,
+					  `output` text NOT NULL,
+					  `time` int(11) NOT NULL DEFAULT '3000',
+					  `points` int(11) NOT NULL DEFAULT '10',
+					  PRIMARY KEY (`sl`)
+					)");
 		// create the solve table
-		mysql_query("CREATE TABLE IF NOT EXISTS `solve` (
-  `sl` int(11) NOT NULL AUTO_INCREMENT,
-  `problem_id` int(11) NOT NULL,
-  `username` varchar(25) NOT NULL,
-  `status` int(11) NOT NULL DEFAULT '1',
-  `attempts` int(11) NOT NULL DEFAULT '1',
-  `soln` text NOT NULL,
-  `filename` varchar(25) NOT NULL,
-  `lang` varchar(20) NOT NULL,
-  PRIMARY KEY (`sl`)
-)");
+		mysqli_query($link,"CREATE TABLE IF NOT EXISTS `solve` (
+					  `sl` int(11) NOT NULL AUTO_INCREMENT,
+					  `problem_id` int(11) NOT NULL,
+					  `username` varchar(25) NOT NULL,
+					  `status` int(11) NOT NULL DEFAULT '1',
+					  `attempts` int(11) NOT NULL DEFAULT '1',
+					  `soln` text NOT NULL,
+					  `filename` varchar(25) NOT NULL,
+					  `lang` varchar(20) NOT NULL,
+					  `points` int(11) DEFAULT '0',
+					  PRIMARY KEY (`sl`)
+					)");
 		// create the users table
-		mysql_query("CREATE TABLE IF NOT EXISTS `users` (
-  `sl` int(11) NOT NULL AUTO_INCREMENT,
-  `username` varchar(25) NOT NULL,
-  `salt` varchar(6) NOT NULL,
-  `hash` varchar(80) NOT NULL,
-  `email` varchar(100) NOT NULL,
-  `status` int(11) NOT NULL DEFAULT '1',
-  PRIMARY KEY (`sl`)
-)");
+		mysqli_query($link,"CREATE TABLE IF NOT EXISTS `users` (
+					  `sl` int(11) NOT NULL AUTO_INCREMENT,
+					  `username` varchar(25) NOT NULL,
+					  `salt` varchar(6) NOT NULL,
+					  `hash` varchar(80) NOT NULL,
+					  `email` varchar(100) NOT NULL,
+					  `status` int(11) NOT NULL DEFAULT '1',
+					  PRIMARY KEY (`sl`)
+					)");
 		// create the user 'admin' with password 'admin'
 		$salt=randomAlphaNum(5);
 		$pass="admin";
 		$hash=crypt($pass,$salt);
 		$sql="INSERT INTO `users` ( `username` , `salt` , `hash` , `email` ) VALUES ('$pass', '$salt', '$hash', '".$_POST['email']."')";
-		mysql_query($sql);
+		mysqli_query($link,$sql);
+		$sql="ALTER TABLE `solve` ADD `time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ;";
+		mysqli_query($link,$sql);
 		header("Location: install.php?installed=1");
 	}
 ?>
@@ -81,7 +96,7 @@
 <html lang="en"><head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <meta charset="utf-8">
-    <title>Codejudge Setup</title>
+    <title>CodeJudge Setup</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -123,32 +138,43 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="#">Codejudge Setup</a>
+          <a class="brand" href="#">CodeJudge  Setup</a>
         </div>
       </div>
     </div>
 
+	
     <div class="container">
     <?php
       if(isset($_GET['installed'])) {?>
-        <div class="alert alert-success">Codejudge is successfully installed!</div>
+        <div class="alert alert-success">CodeJudge is successfully installed!</div>
         
         You can login to the admin panel <a href="admin/">here</a> with the password <strong>admin</strong>. You can change it once you login to the admin panel.
-    <?php  }else if(!file_exists("dbinfo.php")){ ?>
-    Welcome to the Codejudge setup. This will help you set up Codejudge on your server. Make sure that you have MySQL running before you proceed.
+    <?php  }
+	else if(!file_exists("dbinfo.php")){ ?>
+    Welcome to the CodeJudge setup. This will help you set up CodeJudge on your server. Make sure that you have MySQL running before you proceed.
     <h1><small>Details</small></h1>
     <form action="install.php" method="post">
     Database Host: <input type="text" name="host" value="localhost"/><br/>
     Username: <input type="text" name="username"/><br/>
     Password: <input type="password" name="password"/><br/>
-    Database Name: <input type="text" name="name" value="codejudge"/><br/>
-    Email: <input type="email" name="email"/><br/>
+    Database Name: <input type="text" name="name" value="cj" /> [ first create a database and give the name here] ]<br/>
+    Email: <input type="email" name="email" value="user@localhost"/><br/>
+    Installation mode: 	<select name="mode">
+								<option selected value="development">Development</option>
+								<option value="production">Production</option>
+								<option value="testing">Testing</option>
+						</select>    Anytime you can 
+	<br/>
     Compiler Server Host: <input type="text" name="chost" value="localhost"/><br/>
-    Compiler Server Port: <input type="text" name="cport" value="3029"/><br/>
+    Compiler Server Port: <input type="text" name="cport" value="3029"/><br/> 
     <input type="submit" class="btn btn-primary" value="Install"/>
+	<hr />
+	( 3029 is normal TCP data transfer port. The Judgeing code { in java } collects data form this port of host. )<br/>
+	( Better not to change port unless unknown  )
     </form>
     <?php } else {?>
-      <div class="alert alert-error">Codejudge is already installed. Please remove the files and re-install it.</div>
+      <div class="alert alert-error">CodeJudge is already installed. Please remove the 'dbinfo.php' file and re-install it.</div>
     <?php } ?>
     </div> <!-- /container -->
 

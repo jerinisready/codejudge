@@ -11,7 +11,7 @@
 		header("Location: login.php");
 	else
 		include('header.php');
-		connectdb();
+		$link=connectdb();
 ?>
               <li><a href="index.php">Problems</a></li>
               <li class="active"><a href="#">Submissions</a></li>
@@ -31,28 +31,37 @@
         <th>Problem</th>
         <th>Attempts</th>
         <th>Status</th>
+		<th>Points</th>
+		<th>Language</th>
       </tr></thead>
       <tbody>
       <?php
         // list all the submissions made by the user
-        $query = "SELECT problem_id, status, attempts FROM solve WHERE username='".$_SESSION['username']."'";
-        $result = mysql_query($query);
-       	while($row = mysql_fetch_array($result)) {
+        $query = "SELECT problem_id, status, attempts, points, lang FROM solve WHERE username='".$_SESSION['username']."'";
+        $result = mysqli_query($link,$query);
+       	while($row = mysqli_fetch_array($result,MYSQLI_BOTH)) {
        		$sql = "SELECT name FROM problems WHERE sl=".$row['problem_id'];
-       		$res = mysql_query($sql);
-       		if(mysql_num_rows($res) != 0) {
-       			$field = mysql_fetch_array($res);
+       		$res = mysqli_query($link,$sql);
+       		if(mysqli_num_rows($res) != 0) {
+       			$field = mysqli_fetch_array($res,MYSQLI_BOTH);
 	       		echo("<tr><td><a href=\"solve.php?id=".$row['problem_id']."\">".$field['name']."</a></td><td><span class=\"badge badge-info\">".$row['attempts']);
        			if($row['status'] == 1)
-       				echo("</span></td><td><span class=\"label label-warning\">Attempted</span></td></tr>\n");
+       				echo("</span></td><td><span class=\"label label-warning\">Attempted</span></td>\n");
        			else if($row['status'] == 2)
-       				echo("</span></td><td><span class=\"label label-success\">Solved</span></td></tr>\n");
-       		}
+       				echo("</span></td><td><span class=\"label label-success\">Solved</span></td>\n");
+				$class="<span class=\"badge badge-success\" >";
+				echo "<td>".$class.$row['points']."</span></td>";
+				echo "<td>"."<span class=\"badge badge-danger\"  >".$row['lang']."</td></tr>";
+			}
        	}
       ?>
+	  
       </tbody>
+	  
       </table>
-    </div> <!-- /container -->
+	  <div style="float:right">
+		<h4> Currently Earned  : <span class= 'badge badge-success' style='font-size:16px'> <?php echo  points();?> POINTS </span></h4>
+			    </div></div> <!-- /container -->
 
 <?php
 	include('footer.php');

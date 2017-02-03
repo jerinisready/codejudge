@@ -11,7 +11,7 @@
 		header("Location: login.php");
 	else
 		include('header.php');
-		connectdb();
+		$link=connectdb();
 ?>
               <li><a href="index.php">Problems</a></li>
               <li><a href="submissions.php">Submissions</a></li>
@@ -42,11 +42,11 @@
           echo("<div class=\"alert alert-error\">\nPlease enter a legal filename.\n</div>");
           
         $query = "SELECT * FROM prefs";
-        $result = mysql_query($query);
-        $accept = mysql_fetch_array($result);
+        $result = mysqli_query($link,$query);
+        $accept = mysqli_fetch_array($result,MYSQLI_BOTH);
         $query = "SELECT status FROM users WHERE username='".$_SESSION['username']."'";
-        $result = mysql_query($query);
-        $status = mysql_fetch_array($result);
+        $result = mysqli_query($link,$query);
+        $status = mysqli_fetch_array($result,MYSQLI_BOTH);
         if($accept['accept'] == 0)
           echo("<div class=\"alert alert-error\">\nSubmissions are closed now!\n</div>");
         if($status['status'] == 0)
@@ -57,22 +57,23 @@
         // display the problem statement
       	if(isset($_GET['id']) and is_numeric($_GET['id'])) {
       		$query = "SELECT * FROM problems WHERE sl='".$_GET['id']."'";
-          	$result = mysql_query($query);
-          	$row = mysql_fetch_array($result);
+          	$result = mysqli_query($link,$query);
+          	$row = mysqli_fetch_array($result,MYSQLI_BOTH);
       		include('markdown.php');
 		$out = Markdown($row['text']);
-		echo("<hr/>\n<h1>".$row['name']."</h1>\n");
+		echo("<hr/>\n<h1>".$row['name']."</h1><br /> <span class='label label-info' style='font-size:16px'>Point     : {$row['points']} points
+      </span>\n<br><br>");
 		echo($out);
       ?>
-      <br/><span class="label label-info">Time Limit: <?php echo($row['time']/1000); ?> seconds</span>
+      <br/><span class="label label-info">Time Limit : <?php echo($row['time']/1000); ?> second(s)</span>
       <hr/>
       <?php
         // get the peviously submitted solution if exists
         if(is_numeric($_GET['id'])) {
           $query = "SELECT * FROM solve WHERE (problem_id='".$_GET['id']."' AND username='".$_SESSION['username']."')";
-          $result = mysql_query($query);
-          $num = mysql_num_rows($result);
-          $fields = mysql_fetch_array($result);
+          $result = mysqli_query($link,$query);
+          $num = mysqli_num_rows($result);
+          $fields = mysqli_fetch_array($result,MYSQLI_BOTH);
         }
       ?>
       <form method="post" action="eval.php">
@@ -95,15 +96,15 @@
         ?>
         <span class="caret"></span></a>
         <ul class="dropdown-menu">
-          <li><a href="#" onclick="changeLang('C');">C</a></li>
-          <li><a href="#" onclick="changeLang('C++');">C++</a></li>
-          <li><a href="#" onclick="changeLang('Java');">Java</a></li>
-          <li><a href="#" onclick="changeLang('Python');">Python</a></li>
+         <?php if($accept['c'] == 1) {?><li><a href="#" onclick="changeLang('C');">C</a></li> <?php } ?>
+         <?php if($accept['cpp'] == 1) {?> <li><a href="#" onclick="changeLang('C++');">C++</a></li> <?php } ?>
+         <?php if($accept['java'] == 1) {?> <li><a href="#" onclick="changeLang('Java');">Java</a></li> <?php } ?>
+         <?php if($accept['python'] == 1) {?> <li><a href="#" onclick="changeLang('Python');">Python</a></li> <?php } ?>
         </ul>
       </div>
       <br/>
       Filename: <input class="span8" type="text" id="filename" name="filename" value="<?php if(!($num == 0)) echo($fields['filename']);?>"/>
-      <br/>Type your program below:<br/><br/>
+      <br/>SUGGEST A SOLUTION:<br/><br/>
       <textarea style="font-family: mono; height:400px;" class="span9" name="soln" id="text"><?php if(!($num == 0)) echo($fields['soln']);?></textarea><br/>
       <?php if($accept['accept'] == 1 and $status['status'] == 1) echo("<input type=\"submit\" value=\"Run\" class=\"btn btn-primary btn-large\"/>");
             else echo("<input type=\"submit\" value=\"Run\" class=\"btn disabled btn-large\" disabled=\"disabled\"/>");

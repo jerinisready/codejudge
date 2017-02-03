@@ -10,10 +10,10 @@
 <html lang="en"><head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <meta charset="utf-8">
-    <title>About Codejudge</title>
+    <title>About COMPASS</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="">
-    <meta name="author" content="">
+    <meta name="description" content="Coding Competation">
+    <meta name="author" content="jerinisready">
 
     <!-- Le styles -->
     <link href="css/bootstrap.css" rel="stylesheet">
@@ -45,11 +45,12 @@
   <body>
 
     <div class="container">
-      <h1>Codejudge</h1><hr/>
-      <p>Codejudge is a system used to hold coding competitions like this. Its easy to setup, fast and simple to use.</p>
-      <p>Codejudge is made by Sankha Narayan Guria. Find him at <a href="https://twitter.github.com/sankha93">@sankha93</a> on Twitter.<br/>
-      Mail me at <a href="mailto:sankha93@gmail.com">sankha93@gmail.com</a>.</p>
-      <p>Visit the Codejudge website at <a href="http://sankha93.github.com/codejudge">http://sankha93.github.com/codejudge</a> for more information.</p>
+      <h1>COMPASS</h1>
+	  <hr/>
+      <p>Computer Association, known as COMPASS is the association of students<br/>
+	  of Computer Department, <a href="http://cek.ac.in">College of engineering Kallooppara</a>.</p>
+      <p>This Contest is created by Students of same college.<br/>
+	  Reguarding this can be mailed at <a href="mailto:jerinisready@gmail.com">jerinisready@gmail.com</a>.</p>
     </div> <!-- /container -->
     
 <?php
