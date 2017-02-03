@@ -4,36 +4,61 @@
  * Copyright 2012, Sankha Narayan Guria (sankha93@gmail.com)
  * Licensed under MIT License.
  *
- * Codejudge Admin Login page
+ * Shows the list of users
  */
 	require_once('../functions.php');
-	if(loggedin() and $_SESSION['username'] == 'admin')
-		header("Location: index.php");
-	else if(isset($_POST['password'])) {
-		if(trim($_POST['password']) == "")
-			header("Location: login.php?derror=1"); // empty entry
-		else {
-			// code to login the user and start a session
-			$conn=connectdb();
-			  
+	if(!loggedin() or $_SESSION['username']!='admin')
+		echo "<script>window.close();</script>";
+	else
+		include('header.php');
+		$conn=connectdb();
+?>
+              <li class="active"><a href="#about">You are About to reset Our Site!</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+Hello, Admin,<br>
+You are about to reset all the Data.<br>
+Make Sure that No Competations are taking place and you are at safe zone.<br>
+<br>
+<br>
+Proceeding further will result in:<br>
+&nbsp.&nbsp.&nbsp.*&nbspRemovel of all Currently Registered participants and their access(Except 'admin').<br>
+&nbsp &nbsp &nbsp &nbsp &nbsp (They can again Register next time!)<br>
+&nbsp.&nbsp.&nbsp.*&nbsp.Removel of copy of all results and reports of previous events.<br>
+&nbsp.&nbsp.&nbsp.*&nbsp.Removel of all Questions.<br>
+<br>
+All your Conigurations will be kept Unchanged!<br>
+<br>
+<br>
+<br>
+Enter administrator password to proceed further!"<br><br>
+<?php
+$conn=connectdb();
+	if(isset($_POST['password'])) {
+		if(trim($_POST['password']) != "")
+		
 			$query = "SELECT salt,hash FROM users WHERE username='admin'";
 			$result = mysqli_query($conn,$query);
 			$fields = mysqli_fetch_array($result,MYSQLI_BOTH);
 			$currhash = crypt($_POST['password'], $fields['salt']);
 			if($currhash == $fields['hash']) {
-				$_SESSION['username'] = "admin";
-				header("Location: index.php");
-			} else
-				header("Location: login.php?error=1");
+				sanitize_site();
+			} 
+			echo "<script>window.close();</script>";
 		}
-	}
+	
 ?>
 
 <!DOCTYPE html>
 <html lang="en"><head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <meta charset="utf-8">
-    <title><?php echo getName();?> Admin Panel Login</title>
+    <title>Codejudge Admin Panel Login</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -76,30 +101,18 @@
             <span class="icon-bar"></span>
           </a>
           <a class="brand" href="#"><?php echo getName();?> </a>
-
-              <li><a href="instructions.php">Instructions</a></li>
-		  </div>
+        </div>
       </div>
     </div>
 
     <div class="container">
-
-      <?php
-        if(isset($_GET['logout']))
-          echo("<div class=\"alert alert-info\">\nYou have logged out successfully!\n</div>");
-        else if(isset($_GET['error']))
-          echo("<div class=\"alert alert-error\">\nIncorrect Password!\n</div>");
-        else if(isset($_GET['derror']))
-          echo("<div class=\"alert alert-error\">\nPlease enter all the details asked before you can continue!\n</div>");
-      ?>
-      <h1><small>Login</small></h1>
+      <h1><small>Enter Password To Confirm Sanitizing!</small></h1>
       <p>Please login to use the admin panel.</p><br/>
-      <form method="post" action="login.php">
+      <form method="post" action="prompt.php">
         Password: <input type="password" name="password"/><br/><br/>
         <input class="btn" type="submit" name="submit" value="Login"/>
       </form>
-    </div> <!-- /container -->
-
+    </div> <!-- /container -->	
 <?php
 	include('footer.php');
 ?>

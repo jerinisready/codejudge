@@ -6,17 +6,21 @@
  *
  * Codjudge admin panel
  */
+	
+	
 	require_once('../functions.php');
+	//  $conn=mysqli_connect($host,$user,$password,$database);
 	if(!loggedin())
 		header("Location: login.php");
 	else if($_SESSION['username'] !== 'admin')
 		header("Location: login.php");
 	else
 		include('header.php');
-		connectdb();
+		$conn=connectdb();
 ?>
               <li class="active"><a href="#">Admin Panel</a></li>
               <li><a href="users.php">Users</a></li>
+              <li><a href="instructions.php">Instructions</a></li>
               <li><a href="logout.php">Logout</a></li>
             </ul>
           </div><!--/.nav-collapse -->
@@ -41,10 +45,10 @@
       <div>
         <div>
           <form method="post" action="update.php">
-          <?php
-          	$query = "SELECT name, accept, c, cpp, java, python FROM prefs";
-          	$result = mysql_query($query);
-          	$fields = mysql_fetch_array($result);
+          <?php 
+			$query = "SELECT name, accept, c, cpp, java, python FROM prefs";
+          	$result = mysqli_query($conn,$query);
+			$fields=mysqli_fetch_array($result,MYSQLI_BOTH);
           ?>
           <input type="hidden" name="action" value="settings"/>
           Name of event: <input name="name" type="text" value="<?php echo($fields['name']);?>"/><br/>
@@ -72,8 +76,8 @@
           <h1><small>Change Email</small></h1>
           <?php
           	$query = "SELECT email FROM users WHERE username='admin'";
-          	$result = mysql_query($query);
-          	$fields = mysql_fetch_array($result);
+          	$result = mysqli_query($conn,$query);
+          	$fields = mysqli_fetch_array($result,MYSQLI_BOTH);
           ?>
           Email: <input type="email" name="email" value="<?php echo $fields['email'];?>"/><br/><br/>
           <input class="btn" type="submit" name="submit" value="Change Email"/>

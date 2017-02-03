@@ -6,12 +6,14 @@
  *
  * Common header for most files
  */
+?><?php
+require_once('../functions.php');
 ?>
 <!DOCTYPE html>
 <html lang="en"><head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <meta charset="utf-8">
-    <title>Codejudge Admin Panel</title>
+    <title><?php echo getName(); ?> Admin Panel</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -53,7 +55,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="#">Codejudge</a>
+          <a class="brand" href="#"><?php echo getName(); ?></a>
           <div class="nav-collapse">
             <ul class="nav">
 

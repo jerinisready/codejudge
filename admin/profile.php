@@ -13,28 +13,52 @@
 		header("Location: login.php");
 	else
 		include('header.php');
-		connectdb();
+		$link = connectdb();
 ?>
               <li><a href="index.php">Admin Panel</a></li>
               <li><a href="users.php">Users</a></li>
               <li><a href="logout.php">Logout</a></li>
             </ul>
-          </div><!--/.nav-collapse -->
+          </div><!--/.nav-coll	apse -->
         </div>
       </div>
     </div>
 
     <div class="container">
-    <?php
-      // get the name, email and status
+    mode: 	<select name="mode">
+								<options value="production">Production</options>
+								<options value="development">Development</options>
+								<options value="testing">Testing</options>
+						</select>
+	<br/>
+	
+	<?php
+	if ( isset( $_GET['uname'] ) ){
+
+	// get the name, email and status
       $query = "SELECT email, status FROM users WHERE username='".$_GET['uname']."'";
-      $result = mysql_query($query);
-      $row = mysql_fetch_array($result);
-    ?>
-    <h1><small>Profile details for <?php echo($_GET['uname']); if($row['status'] == 0) echo(" <span class=\"label label-important\">Banned</span>");?></small></h1>
+      $result = mysqli_query($link,$query);
+      $row = mysqli_fetch_array($result,MYSQLI_BOTH);
+
+
+  ?>
+	<h1><small>Profile details for <?php echo($_GET['uname']); if($row['status'] == 0) echo(" <span class=\"label label-important\">Banned</span>");?></small></h1>
+    <br />
+	<h5> USERNAME :  <?php echo $_GET['uname'];?><br /><br />
     Email: <?php echo($row['email']);?>
-    <br/><br/>
-    Details of problems attempted:
+    <br/>
+	<br/>POINTS ACHIEVED  :  <?php   // POINT BADGE5
+				$sql = "SELECT * FROM solve WHERE (status='2' AND username='".$_GET['uname']."')";
+				$res = mysqli_query($link,$sql);
+				$total=0;
+				while($each = mysqli_fetch_array($res,MYSQLI_NUM))
+						$total=$each['points'];
+				echo "<span class= 'badge badge-success' > $total </span>";
+				?>
+	</h5>
+	<br/>
+	Details of problems attempted:
+    <hr />
     <table class="table table-striped">
       <thead><tr>
         <th>Problem</th>
@@ -45,12 +69,12 @@
       <?php
         // list all the problems attempted or solved
         $query = "SELECT problem_id, status, attempts FROM solve WHERE username='".$_GET['uname']."'";
-        $result = mysql_query($query);
-       	while($row = mysql_fetch_array($result)) {
-       		$sql = "SELECT name FROM problems WHERE sl=".$row['problem_id'];
-       		$res = mysql_query($sql);
-       		if(mysql_num_rows($res) != 0) {
-       			$field = mysql_fetch_array($res);
+        $result = mysqli_query($link,$query);
+       	while($row = mysqli_fetch_array($result,MYSQLI_BOTH)){
+       		$sql = "SELECT name FROM problems WHERE sl='".$row['problem_id']."'";
+       		$res = mysqli_query($link,$sql);
+       		if(mysqli_num_rows($res) != 0) {
+       			$field = mysqli_fetch_array($res,MYSQLI_BOTH);
 	       		echo("<tr><td><a href=\"#\" onclick=\"$('#area').load('preview.php', {action: 'code', uname: '".$_GET['uname']."', id: '".$row['problem_id']."', name: '".$field['name']."'});\">".$field['name']."</a></td><td><span class=\"badge badge-info\">".$row['attempts']);
        			if($row['status'] == 1)
        				echo("</span></td><td><span class=\"label label-warning\">Attempted</span></td></tr>\n");
@@ -64,6 +88,9 @@
       <div id="area"></div>
     </div> <!-- /container -->
 
-<?php
+	<?php
+	}
+	else echo "Undefined User<br />";
 	include('footer.php');
 ?>
+		
